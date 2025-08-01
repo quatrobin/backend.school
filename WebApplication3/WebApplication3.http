@@ -1,0 +1,64 @@
+### Получение списка ролей
+GET https://localhost:7084/api/auth/roles
+
+### Регистрация ученика
+POST https://localhost:7084/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "student@example.com",
+  "username": "student1",
+  "password": "password123",
+  "roleId": 1
+}
+
+### Регистрация преподавателя
+POST https://localhost:7084/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "teacher@example.com",
+  "username": "teacher1",
+  "password": "password123",
+  "roleId": 2
+}
+
+### Вход ученика
+POST https://localhost:7084/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "student@example.com",
+  "password": "password123"
+}
+
+### Вход преподавателя
+POST https://localhost:7084/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "teacher@example.com",
+  "password": "password123"
+}
+
+### Получение профиля пользователя (требует токен)
+GET https://localhost:7084/api/auth/profile
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Смена пароля (требует токен)
+POST https://localhost:7084/api/auth/change-password
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "currentPassword": "password123",
+  "newPassword": "newpassword123"
+}
+
+### Эндпоинт только для преподавателей (требует токен преподавателя)
+GET https://localhost:7084/api/auth/admin-only
+Authorization: Bearer TEACHER_JWT_TOKEN_HERE
+
+### Эндпоинт только для учеников (требует токен ученика)
+GET https://localhost:7084/api/auth/student-only
+Authorization: Bearer STUDENT_JWT_TOKEN_HERE
