@@ -107,7 +107,6 @@ builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
-builder.Services.AddScoped<DataInitializationService>();
 
 var app = builder.Build();
 
@@ -129,12 +128,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Инициализируем данные при запуске
-using (var scope = app.Services.CreateScope())
-{
-    var dataInitializationService = scope.ServiceProvider.GetRequiredService<DataInitializationService>();
-    await dataInitializationService.InitializeAsync();
-}
 
 app.Run();
