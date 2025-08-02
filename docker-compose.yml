@@ -47,5 +47,40 @@ services:
       - elasticsearch
     restart: unless-stopped
 
+  # SQLite Web - веб-интерфейс для работы с SQLite базой данных
+  sqlite-web:
+    image: coleifer/sqlite-web:latest
+    container_name: sqlite-web
+    environment:
+      - SQLITE_DATABASE=/data/WebApplication3.db
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./WebApplication3/WebApplication3.db:/data/WebApplication3.db:ro
+    restart: unless-stopped
+
+  # Adminer - универсальный веб-интерфейс для баз данных
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "8081:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=localhost
+    restart: unless-stopped
+
+  # DBeaver Community в контейнере (альтернатива)
+  dbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: dbeaver
+    ports:
+      - "8978:8978"
+    environment:
+      - CB_AUTH_SERVER=cloudbeaver
+    volumes:
+      - dbeaver_data:/opt/cloudbeaver/workspace
+    restart: unless-stopped
+
 volumes:
-  elasticsearch_data: 
+  elasticsearch_data:
+  dbeaver_data: 

@@ -13,10 +13,13 @@ A comprehensive school management system backend built with ASP.NET Core Web API
 
 ## Technology Stack
 
-- **Framework**: ASP.NET Core 8.0
+- **Framework**: ASP.NET Core 9.0
 - **Database**: SQLite (with Entity Framework Core)
 - **Authentication**: JWT (JSON Web Tokens)
+- **Search Engine**: Elasticsearch 7.17.0
+- **Logging**: Serilog with Elasticsearch integration
 - **Architecture**: Clean Architecture with Repository Pattern
+- **Containerization**: Docker & Docker Compose
 
 ## Project Structure
 
@@ -33,10 +36,33 @@ WebApplication3/
 
 ### Prerequisites
 
-- .NET 8.0 SDK
+- .NET 9.0 SDK
+- Docker & Docker Compose
 - Visual Studio 2022 or VS Code
 
-### Installation
+### Quick Start with Docker
+
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/backend.school.git
+cd backend.school
+```
+
+2. Start all services with Docker Compose
+```bash
+docker-compose up -d
+```
+
+3. Access the services:
+- **API**: http://localhost:3000
+- **Swagger UI**: http://localhost:3000/swagger
+- **Elasticsearch**: http://localhost:9200
+- **Kibana**: http://localhost:5601
+- **SQLite Web**: http://localhost:8080
+- **Adminer**: http://localhost:8081
+- **DBeaver Community**: http://localhost:8978
+
+### Manual Installation
 
 1. Clone the repository
 ```bash
@@ -51,11 +77,19 @@ dotnet restore
 
 3. Run database migrations
 ```bash
+cd WebApplication3
 dotnet ef database update
+cd ..
 ```
 
-4. Run the application
+4. Start Elasticsearch (optional)
 ```bash
+docker-compose up -d elasticsearch kibana
+```
+
+5. Run the application
+```bash
+cd WebApplication3
 dotnet run
 ```
 
@@ -106,6 +140,17 @@ The API will be available at `https://localhost:7000` (or the configured port).
 - `PUT /api/books/{id}` - Update book
 - `DELETE /api/books/{id}` - Delete book
 
+### Search
+- `GET /api/search?q={query}` - Search across all entities
+- `GET /api/search/users?q={query}` - Search users
+- `GET /api/search/courses?q={query}` - Search courses
+- `GET /api/search/books?q={query}` - Search books
+
+### Elasticsearch Management
+- `GET /api/elasticsearch/health` - Check Elasticsearch health
+- `GET /api/elasticsearch/info` - Get Elasticsearch info
+- `POST /api/elasticsearch/test-logging` - Test logging
+
 ## Database Schema
 
 The application uses Entity Framework Core with SQLite database. Key entities include:
@@ -117,6 +162,36 @@ The application uses Entity Framework Core with SQLite database. Key entities in
 - **AssignmentSubmission**: Student submissions
 - **Book**: Library resources
 - **Role**: User roles and permissions
+
+## Web Interfaces
+
+### Database Management
+- **SQLite Web** (http://localhost:8080): Specialized interface for SQLite databases
+- **Adminer** (http://localhost:8081): Universal database management interface
+- **DBeaver Community** (http://localhost:8978): Professional database IDE
+
+### Monitoring & Analytics
+- **Kibana** (http://localhost:5601): Log analysis and visualization
+- **Elasticsearch** (http://localhost:9200): Search engine and log storage
+
+### Quick Start Scripts
+```bash
+# Start only database interfaces
+./start-db-interfaces.sh
+
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+## Documentation
+
+- [API Documentation](API_DOCUMENTATION.md)
+- [Elasticsearch Setup](ELASTICSEARCH_SETUP.md)
+- [Database Web Interfaces](DATABASE_WEB_INTERFACES.md)
+- [Logging Examples](WebApplication3/LOGGING_EXAMPLES.md)
 
 ## Contributing
 
