@@ -11,10 +11,12 @@ namespace WebApplication3.Services.Implementations;
 public class BookService : IBookService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IElasticsearchService _elasticsearchService;
 
-    public BookService(ApplicationDbContext context)
+    public BookService(ApplicationDbContext context, IElasticsearchService elasticsearchService)
     {
         _context = context;
+        _elasticsearchService = elasticsearchService;
     }
 
     public async Task<BaseResponse<List<BookResponse>>> GetAllBooksAsync()
@@ -102,6 +104,9 @@ public class BookService : IBookService
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
 
+            // Индексируем книгу в Elasticsearch
+            await _elasticsearchService.IndexBookAsync(book);
+
             var bookResponse = MapToBookResponse(book);
             return BaseResponse<BookResponse>.SuccessResponse(bookResponse, "Книга успешно создана");
         }
@@ -147,6 +152,9 @@ public class BookService : IBookService
 
             await _context.SaveChangesAsync();
 
+            // Обновляем индекс в Elasticsearch
+            await _elasticsearchService.IndexBookAsync(book);
+
             var bookResponse = MapToBookResponse(book);
             return BaseResponse<BookResponse>.SuccessResponse(bookResponse, "Книга успешно обновлена");
         }
@@ -166,6 +174,9 @@ public class BookService : IBookService
 
             _context.Books.Remove(book);
             await _context.SaveChangesAsync();
+
+            // Удаляем из индекса Elasticsearch
+            await _elasticsearchService.DeleteDocumentAsync<object>(book.Id.ToString(), "books");
 
             return BaseResponse.SuccessResponse("Книга успешно удалена");
         }

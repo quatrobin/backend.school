@@ -76,6 +76,7 @@ $RECYCLE.BIN/
 
 # Logs
 *.log
+logs/
 
 # Environment files
 .env

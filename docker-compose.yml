@@ -9,6 +9,43 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Data Source=/app/WebApplication3.db
+      - Elasticsearch__Url=http://elasticsearch:9200
     volumes:
       - ./WebApplication3/WebApplication3.db:/app/WebApplication3.db
-    restart: unless-stopped 
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # Elasticsearch сервис
+  elasticsearch:
+    image: elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+
+  # Kibana для визуализации
+  kibana:
+    image: kibana:7.17.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=
+      - ELASTICSEARCH_PASSWORD=
+    ports:
+      - "5601:5601"
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+volumes:
+  elasticsearch_data: 

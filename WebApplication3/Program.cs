@@ -2,12 +2,22 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Text;
 using WebApplication3.Data;
+using WebApplication3.Models.Common;
 using WebApplication3.Services.Interfaces;
 using WebApplication3.Services.Implementations;
+using WebApplication3.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Настройка Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -46,7 +56,16 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "School API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { 
+        Title = "School API", 
+        Version = "v1",
+        Description = "API для системы управления образовательным процессом с интеграцией Elasticsearch",
+        Contact = new OpenApiContact
+        {
+            Name = "School API Support",
+            Email = "support@school.com"
+        }
+    });
     
     // Добавляем поддержку JWT в Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -71,6 +90,26 @@ builder.Services.AddSwaggerGen(c =>
             },
             new string[] {}
         }
+    });
+
+    // Включаем аннотации Swagger
+    c.EnableAnnotations();
+    
+    // Группируем endpoints по тегам
+    c.TagActionsBy(api =>
+    {
+        if (api.GroupName != null)
+        {
+            return new[] { api.GroupName };
+        }
+
+        var controllerActionDescriptor = api.ActionDescriptor as Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor;
+        if (controllerActionDescriptor != null)
+        {
+            return new[] { controllerActionDescriptor.ControllerName };
+        }
+
+        return new[] { api.ActionDescriptor.RouteValues["controller"] };
     });
 });
 
@@ -99,6 +138,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Добавляем авторизацию
 builder.Services.AddAuthorization();
 
+// Конфигурация Elasticsearch
+builder.Services.Configure<ElasticsearchSettings>(
+    builder.Configuration.GetSection("Elasticsearch"));
+
 // Регистрируем сервисы
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -107,6 +150,7 @@ builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+builder.Services.AddScoped<IElasticsearchService, ElasticsearchService>();
 
 var app = builder.Build();
 
@@ -124,9 +168,27 @@ else
 // Добавляем CORS middleware
 app.UseCors("AllowAll");
 
+// Добавляем логирование запросов
+app.UseRequestLogging();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+// Настройка завершения приложения
+app.Lifetime.ApplicationStopped.Register(Log.CloseAndFlush);
+
+try
+{
+    Log.Information("Запуск School API...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "School API завершился с ошибкой");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
