@@ -9,6 +9,7 @@ using WebApplication3.Models.Common;
 using WebApplication3.Services.Interfaces;
 using WebApplication3.Services.Implementations;
 using WebApplication3.Middleware;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -138,6 +139,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Добавляем авторизацию
 builder.Services.AddAuthorization();
 
+// Настройка Prometheus метрик
+Metrics.DefaultRegistry.SetStaticLabels(new Dictionary<string, string>
+{
+    { "app", "school-api" },
+    { "version", "1.0.0" }
+});
+
 // Конфигурация Elasticsearch
 builder.Services.Configure<ElasticsearchSettings>(
     builder.Configuration.GetSection("Elasticsearch"));
@@ -173,6 +181,10 @@ app.UseRequestLogging();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Добавляем endpoint для Prometheus метрик
+app.UseMetricServer();
+app.UseHttpMetrics();
 
 app.MapControllers();
 
