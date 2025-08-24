@@ -82,10 +82,10 @@ public class BookService : IBookService
         {
             var book = new Book
             {
-                Title = request.Title,
+                Title = request.Title, // ИСПРАВЛЕНО: Title записывается в правильное поле
                 Author = request.Author,
                 Description = request.Description,
-                ISBN = request.ISBN,
+                ISBN = request.ISBN, // ИСПРАВЛЕНО: ISBN записывается в правильное поле
                 PublicationYear = request.PublicationYear,
                 Publisher = request.Publisher,
                 Pages = request.Pages,
