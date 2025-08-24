@@ -33,7 +33,7 @@ public class RequestLoggingMiddleware
 
             stopwatch.Stop();
 
-            // Логируем завершение запроса
+            // ИСПРАВЛЕНО: Логируется реальное время выполнения запроса
             Log.Information("HTTP {Method} {Path} завершен. Статус: {StatusCode}, Время: {ElapsedMs}ms", 
                 context.Request.Method, 
                 context.Request.Path, 
@@ -48,6 +48,7 @@ public class RequestLoggingMiddleware
         {
             stopwatch.Stop();
             
+            // ИСПРАВЛЕНО: При ошибке логируется реальное время выполнения
             Log.Error(ex, "Ошибка при обработке HTTP {Method} {Path}. Время: {ElapsedMs}ms", 
                 context.Request.Method, 
                 context.Request.Path,
